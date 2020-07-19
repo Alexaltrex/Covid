@@ -5,13 +5,13 @@ const Period = (props) => {
     let onChange = (e) => {
         props.setPeriod(e.currentTarget.value);
     }
-    let options = [['1 week', 7], ['2 weeks', 14], ['30 days', 30]];
+    let options = [['1 week', 7], ['2 weeks', 14], ['30 days', 30], ['by start', -1]];
     let optionElements = options.map((el, i) =>
         (<option key={i} value={el[1]}>
             {el[0]}
         </option>))
     return (
-        <select onChange={onChange} value={props.period} className={style.select}>
+        <select onChange={onChange} value={props.periodInput} className={style.select}>
             {optionElements}
         </select>
     )

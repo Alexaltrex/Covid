@@ -1,4 +1,4 @@
-import {statisticAPI, summaryAPI} from "../DAL/api";
+import {statisticAPI} from "../DAL/api";
 import {DATE} from "../DAL/date";
 import {CANVAS} from "../DAL/canvas";
 
@@ -6,6 +6,7 @@ const TOGGLE_LOADING = 'TOGGLE-LOADING';
 const SET_COUNTRIES_DATA = 'SET-COUNTRIES-DATA';
 const SET_CURRENT_COUNTRY = 'SET-CURRENT-COUNTRY';
 const SET_PERIOD = 'SET-PERIOD';
+const SET_PERIOD_BY_FIRST_DAY = 'SET_PERIOD_BY_FIRST_DAY';
 const SET_VALUES = 'SET-VALUES';
 const SET_TYPE = 'SET-TYPE';
 const SET_MOUSE_XY = 'SET-MOUSE-XY';
@@ -20,10 +21,12 @@ let stateInitial = {
     isLoading: false,
     // [{Country: 'Country', Slug: 'Slug', ISO2: 'ISO2'}, ...]
     countriesData: [], // Список названий, слагов стран и ISO2
-    period: 14,
+    periodInput: 14, // 7, 14, 30, -1 значение из input select
+    periodByFirstDay: null, // вычисленное с первого дня до текеущего
+    period: 14, // результирующее значение для всех типов (в днях)
     dateEnd: null, // последняя актуальная дата (в формате API)
     dates: null,// массив дат в формате DD.MM
-    currentCountry: 'Australia', //'Russian Federation', // выбранная страна
+    currentCountry: 'Russian Federation', //'Australia', // выбранная страна
     valuesConfirmedNew: [], // [['DD MM YYYY', value], ....] new === by day
     valuesConfirmedTotal: [], // [['DD MM YYYY', value], ....]
     valuesRecoveredNew: [], // [['DD MM YYYY', value], ....] new === by day
@@ -53,6 +56,7 @@ let stateInitial = {
 const statisticReducer = (state = stateInitial, action) => {
     switch (action.type) {
 
+        // переключение статуса загрузки
         case TOGGLE_LOADING: {
             return {...state, isLoading: action.isLoading}
         }
@@ -70,23 +74,27 @@ const statisticReducer = (state = stateInitial, action) => {
             return {...state, countriesData: action.countriesData};
         }
 
+        // установка выбранной страны
         case SET_CURRENT_COUNTRY: {
             return {...state, currentCountry: action.country};
         }
 
+        // установка периода
         case SET_PERIOD: {
-            // установка нового периода
-            // установка массив дат в формате DD.MM для canvas
-            let dates = DATE.getDates(action.period, state.dateEnd)
-            return {...state, period: action.period, dates: dates}
+            return {...state, periodInput: +action.period, period: +action.period}
+        }
+
+        // установка периода от начала до текущей даты
+        case SET_PERIOD_BY_FIRST_DAY: {
+            return {...state, periodByFirstDay: action.data.length, period: action.data.length}
         }
 
         // установка актуальной даты конца периода
         // установка массив дат в формате DD.MM для canvas
         case SET_DATE_END: {
             let dateEnd = action.data[action.data.length - 1].Date;
-            let dates = DATE.getDates(state.period, dateEnd)
-            return {...state, dateEnd: dateEnd, dates: dates}
+            //let dates = DATE.getDates(state.period, dateEnd)
+            return {...state, dateEnd: dateEnd} //, dates: dates
         }
 
         case SET_VALUES: {
@@ -96,33 +104,58 @@ const statisticReducer = (state = stateInitial, action) => {
             let valuesRecoveredTotal = [];
             let valuesDeathsNew = [];
             let valuesDeathsTotal = [];
-            for (let i = 1; i < action.values.length; i++) {
-
-                if (action.values[i].Confirmed >= action.values[i - 1].Confirmed) {
-                    valuesConfirmedTotal.push(action.values[i].Confirmed);
-                    valuesConfirmedNew.push(action.values[i].Confirmed - action.values[i - 1].Confirmed);
-                } else {
-                    valuesConfirmedTotal.push(null);
-                    valuesConfirmedNew.push(null);
-                };
-
-                if (action.values[i].Recovered >= action.values[i-1].Recovered) {
-                    valuesRecoveredTotal.push(action.values[i].Recovered);
-                    valuesRecoveredNew.push(action.values[i].Recovered - action.values[i - 1].Recovered);
-                } else {
-                    valuesRecoveredTotal.push(null);
-                    valuesRecoveredNew.push(null);
-                };
-
-                if (action.values[i].Deaths >= action.values[i-1].Deaths) {
-                    valuesDeathsTotal.push(action.values[i].Deaths);
-                    valuesDeathsNew.push(action.values[i].Deaths - action.values[i - 1].Deaths);
-                } else {
-                    valuesDeathsTotal.push(null);
-                    valuesDeathsNew.push(null);
-                };
+            let dates = [];
+            // если period=7,14,30, длина массива данных равно period+1 для получения значений разницы (за один день)
+            let i0; //индекс начала итерации
+            if (action.values.length <= 31) {
+                i0 = 1;
+            } else {
+                i0 = 0;
             }
+            for (let i = i0; i < action.values.length; i++) {
+                // заполнение  массива dates - Date: "2020-07-11T00:00:00Z"
+                let day = action.values[i].Date.slice(8, 10);
+                let month = action.values[i].Date.slice(5, 7);
+                dates.push(`${day}.${month}`);
 
+                if (i0 === 0 && i === 0) {
+                    valuesConfirmedNew.push(action.values[i].Confirmed);
+                    valuesConfirmedTotal.push(action.values[i].Confirmed);
+                    valuesRecoveredNew.push(action.values[i].Recovered);
+                    valuesRecoveredTotal.push(action.values[i].Recovered);
+                    valuesDeathsNew.push(action.values[i].Deaths);
+                    valuesDeathsTotal.push(action.values[i].Deaths);
+                } else {
+                    // проверка присланных данных на ошибки
+                    // может быть общее послед. меньше, чем общее предыдущее
+                    if (action.values[i].Confirmed >= action.values[i - 1].Confirmed) {
+                        valuesConfirmedTotal.push(action.values[i].Confirmed);
+                        valuesConfirmedNew.push(action.values[i].Confirmed - action.values[i - 1].Confirmed);
+                    } else {
+                        valuesConfirmedTotal.push(null);
+                        valuesConfirmedNew.push(null);
+                    }
+
+                    if (action.values[i].Recovered >= action.values[i - 1].Recovered) {
+                        valuesRecoveredTotal.push(action.values[i].Recovered);
+                        valuesRecoveredNew.push(action.values[i].Recovered - action.values[i - 1].Recovered);
+                    } else {
+                        valuesRecoveredTotal.push(null);
+                        valuesRecoveredNew.push(null);
+                    }
+
+                    if (action.values[i].Deaths >= action.values[i - 1].Deaths) {
+                        valuesDeathsTotal.push(action.values[i].Deaths);
+                        valuesDeathsNew.push(action.values[i].Deaths - action.values[i - 1].Deaths);
+                    } else {
+                        valuesDeathsTotal.push(null);
+                        valuesDeathsNew.push(null);
+                    }
+                }
+
+
+            }
+            // текущее выбранное
             let valuesCurrent = [];
             if (action.typeTime === 'byDay' && action.caseType === 'confirmed') {
                 valuesCurrent = valuesConfirmedNew
@@ -150,7 +183,8 @@ const statisticReducer = (state = stateInitial, action) => {
                 valuesConfirmedTotal: valuesConfirmedTotal,
                 valuesRecoveredTotal: valuesRecoveredTotal,
                 valuesDeathsTotal: valuesDeathsTotal,
-                valuesCurrent: valuesCurrent
+                valuesCurrent: valuesCurrent,
+                dates: dates
             };
         }
 
@@ -254,6 +288,7 @@ export const toggleLoading = (isLoading) => ({type: TOGGLE_LOADING, isLoading});
 export const setCountriesData = (countriesData) => ({type: SET_COUNTRIES_DATA, countriesData});
 export const setCurrentCountry = (country) => ({type: SET_CURRENT_COUNTRY, country});
 export const setPeriod = (period) => ({type: SET_PERIOD, period});
+export const setPeriodByFirstDay = (data) => ({type: SET_PERIOD_BY_FIRST_DAY, data});
 export const setDateEnd = (data) => ({type: SET_DATE_END, data});
 export const setValues = (values, type, caseType) => ({type: SET_VALUES, values, typeTime: type, caseType});
 export const setType = (typeValue) => ({type: SET_TYPE, typeValue});
@@ -290,14 +325,26 @@ export const getInitial = (period, country, type, caseType) => dispatch => {
 
 export const getValues = (dateEnd, period, country, type, caseType) => dispatch => {
     dispatch(toggleLoading(true));
-    let dateEndJS = DATE.dateAPIToJs(dateEnd);
-    let dateStartJS = new Date(dateEndJS.getTime() - (period) * 24 * 60 * 60 * 1000);
-    let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
-    statisticAPI.getValues(country, dateStartAPI, dateEnd)
-        .then(data => {
-            dispatch(setValues(data, type, caseType));
-            dispatch(toggleLoading(false));
-        })
+
+    if (period === 7 || period === 14 || period === 30) {
+        let dateEndJS = DATE.dateAPIToJs(dateEnd);
+        let dateStartJS = new Date(dateEndJS.getTime() - (period) * 24 * 60 * 60 * 1000);
+        let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
+        statisticAPI.getValues(country, dateStartAPI, dateEnd)
+            .then(data => {
+                dispatch(setValues(data, type, caseType));
+                dispatch(toggleLoading(false));
+            })
+    } else {
+        console.log('getValuesFromDayOne')
+        statisticAPI.getValuesFromDayOne(country)
+            .then(data => {
+                dispatch(setPeriodByFirstDay(data));
+                dispatch(setValues(data, type, caseType));
+                dispatch(toggleLoading(false));
+            })
+    }
+
 }
 
 export default statisticReducer;

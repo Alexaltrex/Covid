@@ -1,6 +1,6 @@
 import {connect} from "react-redux";
 import Type from "./Type";
-import {setCurrentValues, setPeriod, setType} from "../../../../store/statistic-reducer";
+import {setCurrentValues, setType} from "../../../../store/statistic-reducer";
 
 
 const mapStateToProps = (state) => ({

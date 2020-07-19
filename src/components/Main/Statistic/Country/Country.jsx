@@ -2,8 +2,7 @@ import React from 'react';
 import style from './CountryStatistic.module.css';
 
 const Country = (props) => {
-    //console.log(props)
-    let onChange = (e) => {
+        let onChange = (e) => {
         props.setCurrentCountry(e.currentTarget.value);
 
     }

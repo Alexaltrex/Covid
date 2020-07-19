@@ -2,7 +2,6 @@ import {connect} from "react-redux";
 import React from "react";
 import Statistic from "./Statistic";
 import {getInitial, getValues} from "../../../store/statistic-reducer";
-import {DATE} from "../../../DAL/date";
 
 class StatisticAJAX extends React.Component {
     componentDidMount() {

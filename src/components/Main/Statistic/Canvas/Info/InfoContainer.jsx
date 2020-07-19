@@ -1,4 +1,3 @@
-import React from 'react';
 import {connect} from "react-redux";
 import Info from "./Info";
 import {setMouseHoverCanvas} from "../../../../../store/statistic-reducer";

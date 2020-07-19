@@ -1,7 +1,6 @@
 import React from 'react';
 import style from './Main.module.css'
 import {Route, Switch} from "react-router-dom";
-import Statistic from "./Statistic/Statistic";
 import Home from "./Home/Home";
 import SummaryContainer from "./Summary/SummaryContainer";
 import StatisticContainer from "./Statistic/StatisticContainer";

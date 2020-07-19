@@ -4,7 +4,7 @@ import {CANVAS} from "../../../../../DAL/canvas";
 
 const Info = (props) => {
 
-    let left, top;
+    let left;
     const deltaX = (CANVAS.canvasW() - CANVAS.marginLeftX - CANVAS.marginRightX - CANVAS.paddingLeftX) / (props.period - 1);
     let canvasX = (i) => {
         return CANVAS.marginLeftX + CANVAS.paddingLeftX + i * deltaX;

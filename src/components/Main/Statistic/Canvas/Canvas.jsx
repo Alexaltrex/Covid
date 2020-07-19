@@ -55,6 +55,12 @@ class Canvas extends React.Component {
     // график и горизонтальные линии
     ////////////////////////////////////////////////////////////////////
     drawCanvasGraph = () => {
+        // let period;
+        // if (this.props.period !== -1) {
+        //     period = this.props.period;
+        // } else {
+        //     period = this.props.periodByFirstDay;
+        // }
         let values = this.props.valuesCurrent;
         const valueMin = Math.min.apply(null, values.filter(el => el !== null));
         const valueMax = Math.max.apply(null, values.filter(el => el !== null));
@@ -177,28 +183,28 @@ class Canvas extends React.Component {
                 ctx.fill();
             }
         }
-    }
+    };
 
     onMouseMove = (e) => {
         const canvas = e.target.getBoundingClientRect();
         let x = e.clientX - canvas.left;
         let y = e.clientY - canvas.top;
         this.props.setMouseXY(x, y);
-    }
+    };
 
     onMouseEnter = () => {
         this.props.setMouseHoverCanvas(true);
-    }
+    };
 
     onMouseLeave = () => {
         this.props.setMouseHoverCanvas(false);
-    }
+    };
 
     render() {
         let valueIsExists = !!this.props.valuesCurrent && !!this.props.valuesCurrent.length;
         let canvasWrapperStyle = {
             width: this.canvasW, height: this.canvasH
-        }
+        };
         return (
             <div className={style.canvas}>
                 <div className={style.canvasWrapper} style={canvasWrapperStyle}>

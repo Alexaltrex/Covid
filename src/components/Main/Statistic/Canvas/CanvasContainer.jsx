@@ -4,6 +4,7 @@ import Canvas from "./Canvas";
 
 const mapStateToProps = (state) => ({
     period: state.statisticPage.period,
+    //periodByFirstDay: state.statisticPage.periodByFirstDay,
     valuesCurrent: state.statisticPage.valuesCurrent,
     mouseHoverCanvas: state.statisticPage.mouseHoverCanvas,
     mouseX: state.statisticPage.mouseX,

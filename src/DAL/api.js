@@ -30,6 +30,10 @@ export const statisticAPI = {
         let dateEnd = DATE.dateJsToAPI(DATE.getCurrentDate());
         return instance.get(`total/country/${country}?from=${dateStart}&to=${dateEnd}`)
             .then(response => response.data)
+    },
+    // получить все типы для заданной страны с первого дня
+    getValuesFromDayOne(country){
+        return instance.get(`dayone/country/${country}`)
+            .then(response => response.data)
     }
-
 }

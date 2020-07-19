@@ -1,6 +1,5 @@
 import React from 'react';
 import style from './CaseType.module.css';
-import {setCurrentValues} from "../../../../store/statistic-reducer";
 
 const CaseType = (props) => {
 

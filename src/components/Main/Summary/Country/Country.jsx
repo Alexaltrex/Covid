@@ -1,5 +1,4 @@
 import React from 'react';
-import style from './Country.module.css';
 
 const Country = (props) => {
     let onChange = (e) => {

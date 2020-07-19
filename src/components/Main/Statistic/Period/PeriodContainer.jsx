@@ -4,7 +4,7 @@ import {setPeriod} from "../../../../store/statistic-reducer";
 
 
 const mapStateToProps = (state) => ({
-    period: state.statisticPage.period,
+    periodInput: state.statisticPage.periodInput,
 });
 
 const PeriodContainer = connect(mapStateToProps, {setPeriod})(Period);
