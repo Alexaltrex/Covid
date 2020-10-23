@@ -1,8 +1,0 @@
-.value{
-    position: absolute;
-    transform: translate(-50%, 5px);
-    background-color: #434040;
-    color: #fff;
-    z-index: 100;
-    padding: 2px 4px;
-}

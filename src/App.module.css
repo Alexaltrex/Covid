@@ -1,8 +1,0 @@
-.appWrapper {
-    max-width: 1120px;
-    width: 100%;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
