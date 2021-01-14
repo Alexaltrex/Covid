@@ -6,34 +6,41 @@ import {StateType} from "../../../store/store";
 import {ByDayOrTotalType, CaseTypeType, PeriodType, StatisticFormValuesType} from "../../../types/types";
 
 class StatisticAJAX extends React.Component<StatisticContainerPropsType, {}> {
+
     componentDidMount() {
-        const period = this.props.formValues.period;
-        const country = this.props.formValues.country;
-        const byDayOrTotal = this.props.formValues.byDayOrTotal;
-        const caseType = this.props.formValues.caseType;
+        const {country, period, byDayOrTotal, caseType} = this.props.formValues;
         this.props.getInitial(period, country, byDayOrTotal, caseType);
+        console.log('componentDidMount')
+        // this.props.getInitial(period, country, byDayOrTotal, caseType);
+        // this.props.getInitial(period, country, byDayOrTotal, caseType);
+        // this.props.getInitial(period, country, byDayOrTotal, caseType);
+        // this.props.getInitial(period, country, byDayOrTotal, caseType);
+        // this.props.getInitial(period, country, byDayOrTotal, caseType);
     }
+
     componentDidUpdate(prevProps: StatisticContainerPropsType, prevState: StatisticContainerPropsType) {
-        const period = this.props.formValues.period;
-        const country = this.props.formValues.country;
-        const byDayOrTotal = this.props.formValues.byDayOrTotal;
-        const caseType = this.props.formValues.caseType;
-        // если изменилась страна или период - получить с сервера
+        console.log(`prevProps.formValues.caseType = ${prevProps.formValues.caseType}`);
+        console.log(`this.props.formValues.caseType = ${this.props.formValues.caseType}`);
+        console.log('')
+        const {country, period, byDayOrTotal, caseType} = this.props.formValues;
+        // если изменилась страна или период - запрос на сервер
         if (this.props.dateEnd
-            && (prevProps.formValues.period !== this.props.formValues.period
-            || prevProps.formValues.country !== this.props.formValues.country)) {
+            && (prevProps.formValues.period !== period
+            || prevProps.formValues.country !== country)) {
             this.props.getValues(this.props.dateEnd, period, country, byDayOrTotal, caseType)
         }
         // если изменился только или тип за день/общее или тип случая - получить из стора
         if (
-            prevProps.formValues.country === this.props.formValues.country
-            && prevProps.formValues.period === this.props.formValues.period
-            && (prevProps.formValues.byDayOrTotal !== this.props.formValues.byDayOrTotal
-            || prevProps.formValues.caseType !== this.props.formValues.caseType)
+            prevProps.formValues.country === country
+            && prevProps.formValues.period === period
+            && (prevProps.formValues.byDayOrTotal !== byDayOrTotal
+            || prevProps.formValues.caseType !== caseType)
         ) {
             this.props.setCurrentValues(byDayOrTotal, caseType);
+            console.log('test')
         }
     }
+
     render() {
         return <Statistic />
     }

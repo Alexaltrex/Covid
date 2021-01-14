@@ -7,7 +7,7 @@ import {
     ByDayOrTotalType,
     CaseTypeType,
     CountryCasesByDayType,
-    CountryType,
+    CountryType, LanErrorResponseType,
     PeriodType,
     StatisticFormValuesType,
     typeType
@@ -39,7 +39,7 @@ let initialState = {
     // при изменении country или period - загрузка с сервера - getValues (getInitial - при инициализации)
     // при неизменности country или period и изменении byDayOrTotal или caseType - получить из стора - setCurrentValues
     valuesCurrent: [] as Array<number | null>, // массив значений текущего выбранного типа
-    showInfo: false, // показывать или нет модальное окно со значением
+    showInfo: false, // показывать или нет модальное окно со значением в точке
     infoValue: null as null | number, // выводимое в модальном окне значение
     infoDate: null as null | string, // выводимая в модальном окне дата
     xPoint: 0, // координаты точки на графике и линии
@@ -207,6 +207,7 @@ const statisticReducer = (state = initialState, action: StatisticActionsType): i
             return {...state, mouseHoverCanvas: action.mouseHoverCanvas}
         }
         case 'statistic/SET_CURRENT_VALUES': {
+            console.log('statistic/SET_CURRENT_VALUES')
             const valuesCurrent = state.allValues[action.caseType][action.byDayOrTotal].values;
             return {...state, valuesCurrent: valuesCurrent}
         }
@@ -271,18 +272,40 @@ export const getInitial = (period: PeriodType, country: string, byDayOrTotal: By
         dispatch(statisticAC.setDates(getValuesByPeriodResponse)); // установить массив дат
         // 4 - окончательно - проинициализировать
         dispatch(statisticAC.setInitialized())
-    } catch (e) {
-        console.log(e);
+    } catch (error) {
         dispatch(appAC.setLanError(true));
+        // Error 😨
+        if (error.response) {
+            // The request was made and the server responded with a
+            // status code that falls out of the range of 2xx
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+
+            const lanErrorResponse: LanErrorResponseType = {
+                status: error.response.status,
+                message: error.response.data.message
+            };
+            dispatch(appAC.setLanErrorResponse(lanErrorResponse))
+        } else if (error.request) {
+            /*
+             * The request was made but no response was received, `error.request`
+             * is an instance of XMLHttpRequest in the browser and an instance
+             * of http.ClientRequest in Node.js
+             */
+            console.log(error.request);
+        } else {
+            // Something happened in setting up the request and triggered an Error
+            console.log('Error', error.message);
+        }
+        console.log(error);
     } finally {
         dispatch(appAC.toggleLoading(false));
     }
-
-}
+};
 
 export const getValues = (dateEnd: string, period: PeriodType, country: string, byDayOrTotal: ByDayOrTotalType, caseType: CaseTypeType): ThunkType => async (dispatch) => {
     try {
-       console.log('getValues')
         dispatch(appAC.toggleLoading(true));
         if (period === '7' || period === '14' || period === '30') {
             let dateEndJS = DATE.dateAPIToJs(dateEnd);

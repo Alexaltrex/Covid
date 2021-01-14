@@ -6,7 +6,8 @@ const mapStateToProps = (state: StateType): MapStatePropsType => ({
     valuesCurrent: state.statistic.valuesCurrent,
     mouseHoverCanvas: state.statistic.mouseHoverCanvas,
     showInfo: state.statistic.showInfo,
-    isLoading: state.app.isLoading
+    isLoading: state.app.isLoading,
+    lanError: state.app.lanError
 });
 
 const CanvasContainer = connect<MapStatePropsType,
@@ -21,6 +22,7 @@ type MapStatePropsType = {
     mouseHoverCanvas: boolean
     showInfo: boolean
     isLoading: boolean
+    lanError: boolean
 }
 type MapDispatchPropsType = {}
 export type CanvasPropsType = MapStatePropsType & MapDispatchPropsType

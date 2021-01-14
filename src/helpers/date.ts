@@ -103,8 +103,8 @@ export const DATE = {
     // перевод из '2020-07-09T00:00:00Z' в '7 сентября 2020'
     dateTranslateFromAPI(date: string, lang: LangType): string {
         const year = date.slice(0, 4);
-        const month = date.slice(5, 7);
-        const monthWord = this.getMonthWord(+month, lang);
+        const month =  +date.slice(5, 7); // 1...12
+        const monthWord = this.getMonthWord((+month) - 1, lang);
         const day = date[8] === '0' ? date.slice(9, 10) : date.slice(8, 10);
         return `${day} ${monthWord} ${year}`
     },

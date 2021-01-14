@@ -2,6 +2,7 @@ import React, {ReactElement, useEffect, useRef} from "react";
 import {CANVAS} from "../../../../helpers/canvas";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {CanvasPointPropsType} from "./CanvasPointContainer";
+import throttle from 'lodash/throttle'
 
 export const CanvasPoint: React.FC<CanvasPointPropsType> = (props): ReactElement => {
     const {
@@ -74,8 +75,11 @@ export const CanvasPoint: React.FC<CanvasPointPropsType> = (props): ReactElement
             const x = e.clientX - canvas.left
             const y = e.clientY - canvas.top;
             setMouseXY(x, y);
+            //console.log('on CanvasPoint move')
         }
     };
+
+    const onMouseMoveThrottle = throttle(onMouseMove, 10);
 
     return (
         <canvas
@@ -85,7 +89,7 @@ export const CanvasPoint: React.FC<CanvasPointPropsType> = (props): ReactElement
             height={CANVAS.canvasH()}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            onMouseMove={onMouseMove}
+            onMouseMove={onMouseMoveThrottle}
         />
 
     )

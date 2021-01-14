@@ -2,7 +2,7 @@ import React, {ReactElement, useEffect, useRef} from "react";
 import {CANVAS} from "../../../../helpers/canvas";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {CanvasGraphPropsType} from "./CanvasGraphContainer";
-
+import throttle from 'lodash/throttle';
 
 export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPropsType): ReactElement => {
     const {
@@ -126,11 +126,14 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
     const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         if (e.target) {
             const canvas: DOMRect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - canvas.left
+            const x = e.clientX - canvas.left;
             const y = e.clientY - canvas.top;
+            //console.log('on CanvasGraph move')
             setMouseXY(x, y);
         }
     };
+
+    const onMouseMoveThrottle = throttle(onMouseMove, 10);
 
     const onMouseEnter = () => {
         setMouseHoverCanvas(true)
@@ -146,7 +149,7 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
             ref={canvasRef}
             width={CANVAS.canvasW()}
             height={CANVAS.canvasH()}
-            onMouseMove={onMouseMove}
+            onMouseMove={onMouseMoveThrottle}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
 

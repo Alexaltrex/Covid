@@ -12,25 +12,35 @@ import DatesContainer from "./Dates/DatesContainer";
 import Preloader from "../../../common/Preloader";
 
 export const CanvasAll: React.FC<CanvasPropsType> = (props: CanvasPropsType): ReactElement => {
-    const {valuesCurrent, mouseHoverCanvas, showInfo, isLoading} = props;
+    const {
+        valuesCurrent, mouseHoverCanvas, showInfo,
+        isLoading, lanError
+    } = props;
     const classes = useStyles();
-    let valueIsExists = !!valuesCurrent.length;
+    //let valueIsExists = !!valuesCurrent.length;
 
     return (
         <div className={classes.canvasBlock}>
             <div className={classes.canvasAll}>
                 <CanvasAxisMemo/>
+
                 {
-                    isLoading || !valueIsExists
-                        ? <Preloader/>
-                        : <>
-                            <CanvasGraphContainer/>
-                            {showInfo && mouseHoverCanvas && <CanvasPointContainer/>}
-                            <ValuesContainer />
-                            {showInfo && mouseHoverCanvas && <InfoContainer/>}
-                            <DatesContainer />
-                        </>
+                    !lanError &&
+                    <>
+                        {
+                            isLoading
+                                ? <Preloader/>
+                                : <>
+                                    <CanvasGraphContainer/>
+                                    {showInfo && mouseHoverCanvas && <CanvasPointContainer/>}
+                                    <ValuesContainer/>
+                                    {showInfo && mouseHoverCanvas && <InfoContainer/>}
+                                    <DatesContainer/>
+                                </>
+                        }
+                    </>
                 }
+
             </div>
 
         </div>

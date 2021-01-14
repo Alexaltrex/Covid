@@ -1,4 +1,4 @@
-import React, {ReactElement} from 'react';
+import React, {ReactElement, useEffect} from 'react';
 import SummaryCases from "./SummaryCases";
 import {CountryCasesType, LangType, SummaryCountryType} from "../../../types/types";
 import {translate} from "../../../helpers/translate";
@@ -8,21 +8,54 @@ import makeStyles from "@material-ui/core/styles/makeStyles";
 import {Typography} from "@material-ui/core";
 import Preloader from "../../common/Preloader";
 import clsx from "clsx";
+import useCommonQueryParams from "../../../hooks/useCommonQueryParams";
+import {useDispatch} from 'react-redux';
+import {StringParam, useQueryParam} from "use-query-params";
+import {summaryAC} from "../../../store/summary-reducer";
 
-const Summary: React.FC<PropsType> = (props: PropsType): ReactElement => {
-    const {date, summaryCases, isLoading, lang, countriesCases, currentCountry} = props;
+//========================= CUSTOM HOOK ====================
+const useSummary = (
+    currentCountry: string,
+    countriesCases: null | Array<SummaryCountryType>,
+) => {
+    const dispatch = useDispatch();
+    useCommonQueryParams();
+    const [countryQuery, setCountryQuery] = useQueryParam('country', StringParam);
+    // URL => STATE
+    useEffect(() => {
+        dispatch(summaryAC.setCurrentCountry(countryQuery ? countryQuery : currentCountry));
+    }, [dispatch]);
+    // STATE => URL
+    useEffect(() => {
+        setCountryQuery(currentCountry !== 'Russian Federation' ? currentCountry : undefined);
+    }, [
+        currentCountry
+    ]);
+
     const classes = useStyles();
     const currentCasesFull = countriesCases && countriesCases.find(el => el.Country === currentCountry)
-const currentCases = (currentCasesFull && {
-    NewConfirmed: currentCasesFull.NewConfirmed,
-    TotalConfirmed: currentCasesFull.TotalConfirmed,
-    NewDeaths: currentCasesFull.NewDeaths,
-    TotalDeaths: currentCasesFull.TotalDeaths,
-    NewRecovered: currentCasesFull.NewRecovered,
-    TotalRecovered: currentCasesFull.TotalRecovered
-}) as null | CountryCasesType;
-    if (isLoading) return <Preloader/>;
+    const currentCases = (currentCasesFull && {
+        NewConfirmed: currentCasesFull.NewConfirmed,
+        TotalConfirmed: currentCasesFull.TotalConfirmed,
+        NewDeaths: currentCasesFull.NewDeaths,
+        TotalDeaths: currentCasesFull.TotalDeaths,
+        NewRecovered: currentCasesFull.NewRecovered,
+        TotalRecovered: currentCasesFull.TotalRecovered
+    }) as null | CountryCasesType;
 
+    return {
+        classes, currentCases
+    }
+}
+
+//========================= COMPONENT ======================
+const Summary: React.FC<PropsType> = (props: PropsType): ReactElement => {
+    const {date, summaryCases, isLoading, lang, countriesCases, currentCountry} = props;
+    const {
+        classes, currentCases
+    } = useSummary(currentCountry, countriesCases);
+
+    if (isLoading) return <Preloader/>;
     return (
         <>
             <div className={classes.blocks}>
@@ -47,9 +80,12 @@ const currentCases = (currentCasesFull && {
                     <SummaryCases cases={currentCases} lang={lang}/>
                 </div>
             </div>
-            <Typography variant='subtitle1' align='center'>
-                {DATE.dateTranslateFromAPI(date, lang)}
-            </Typography>
+            {
+                date &&
+                <Typography variant='subtitle1' align='center'>
+                    {DATE.dateTranslateFromAPI(date, lang)}
+                </Typography>
+            }
         </>
     )
 };

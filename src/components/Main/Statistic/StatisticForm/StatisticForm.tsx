@@ -75,7 +75,8 @@ const StatisticForm: React.FC<StatisticFormPropsType> = (props: StatisticFormPro
     const onSubmit = (newFormValue: StatisticFormValuesType) => {
         setFormValues(newFormValue);
         // если formValues.period = -1 (старое значение, из стора)
-        // и изменилось ByDayOrTotal или caseType - что не приводит к загрузке данных с сервера и пересчету period на реальное значение,
+        // и изменилось ByDayOrTotal или caseType - что не приводит к загрузке данных с сервера
+        // и пересчету period на реальное значение,
         // state.period переписывать на значение из формы (-1) нельзя
         if (
             !(formValues.period === '-1' &&
@@ -87,6 +88,7 @@ const StatisticForm: React.FC<StatisticFormPropsType> = (props: StatisticFormPro
     const initialValues: StatisticFormValuesType = formValues;
     return (
         <ReduxForm onSubmit={onSubmit}
+                   enableReinitialize
                    initialValues={initialValues}
                    countriesData={countriesData}
                    lang={lang}

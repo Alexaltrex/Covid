@@ -49,5 +49,15 @@ export type StatisticFormValuesType = { // значения из формы
     byDayOrTotal: ByDayOrTotalType
     caseType: CaseTypeType
 }
+export type LanErrorResponseType = {
+    message: string
+    status: number
+}
+export type FormValuesType = {
+    country: string
+    period: PeriodType
+    byDayOrTotal: typeType
+    caseType: CaseTypeType
+}
 
 

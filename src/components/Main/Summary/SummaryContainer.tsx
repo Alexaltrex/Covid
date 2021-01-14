@@ -11,7 +11,7 @@ class SummaryAJAX extends React.Component<SummaryPropsType, {}> {
     }
 
     render() {
-        const {getSummary, ...other} = this.props
+        const {getSummary, ...other} = this.props;
         return <Summary {...other}/>
     }
 }

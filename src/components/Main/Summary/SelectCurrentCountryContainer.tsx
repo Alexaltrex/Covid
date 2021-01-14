@@ -26,5 +26,6 @@ type MapStatePropsType = {
 }
 type MapDispatchPropsType = {
     setCurrentCountry: (currentCountry: string) => void
+
 }
 type OwnPropsType = {}

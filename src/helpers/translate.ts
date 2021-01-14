@@ -109,6 +109,14 @@ export const Translate: LangObjectType = {
         'eng': 'Coronavirus statistic',
         'rus': 'Статистика коронавируса'
     },
+    'Automatically retry server request in': {
+        'eng': 'Automatically retry server request in',
+        'rus': 'Автоматический повтор запроса на сервер через'
+    },
+    'sec': {
+        'eng': 'sec',
+        'rus': 'сек'
+    }
 };
 
 // const lang = useSelector(getLang);
