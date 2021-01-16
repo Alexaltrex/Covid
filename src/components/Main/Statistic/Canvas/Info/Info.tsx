@@ -1,6 +1,5 @@
 import React, {ReactElement} from 'react';
 import {CANVAS} from "../../../../../helpers/canvas";
-import {InfoType} from "./InfoContainer";
 import Typography from '@material-ui/core/Typography';
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import red from "@material-ui/core/colors/red";
@@ -8,9 +7,25 @@ import green from "@material-ui/core/colors/green";
 import indigo from "@material-ui/core/colors/indigo";
 import grey from "@material-ui/core/colors/grey";
 import {addCommaToNumber} from "../../../../../helpers/addCommaToNumber";
+import {useDispatch, useSelector} from "react-redux";
+import {
+    getFormValuesSelector, getInfoDate, getInfoValue,
+    getMouseX,
+    getMouseY,
+    getPeriod
+} from "../../../../../store/selectors/statistic-selectors";
+import {statisticAC} from "../../../../../store/reducers/statistic-reducer";
 
-const Info: React.FC<InfoType> = (props: InfoType): ReactElement => {
-    const {period, mouseX, mouseY, caseType, setMouseHoverCanvas, infoValue, infoDate} = props;
+//================== CUSTOM HOOK ==================
+const useInfo = () => {
+    const dispatch = useDispatch();
+    const period = useSelector(getPeriod);
+    const mouseX = useSelector(getMouseX);
+    const mouseY = useSelector(getMouseY);
+    const caseType = useSelector(getFormValuesSelector).caseType;
+    const infoValue = useSelector(getInfoValue);
+    const infoDate = useSelector(getInfoDate);
+
     const classes = useStyles();
     let left: number;
     const deltaX = (CANVAS.canvasW() - CANVAS.marginLeftX - CANVAS.marginRightX - CANVAS.paddingLeftX) / (period - 1);
@@ -36,16 +51,31 @@ const Info: React.FC<InfoType> = (props: InfoType): ReactElement => {
     };
 
     let onMouseEnter = () => {
-        setMouseHoverCanvas(true);
+        dispatch(statisticAC.setMouseHoverCanvas(true));
     };
 
     let onMouseLeave = () => {
-        setMouseHoverCanvas(false);
+        dispatch(statisticAC.setMouseHoverCanvas(false));
     };
 
-    const infoValueLabel: string = infoValue
+    const infoValueLabel: string = (infoValue || infoValue === 0)
         ? addCommaToNumber(infoValue)
         : 'No data';
+    return {
+        showInfo, onMouseEnter, onMouseLeave, styleInfo,
+        classes, styleValue, infoValueLabel, infoDate
+    }
+}
+
+
+//================== COMPONENT ====================
+const Info: React.FC<{}> = (): ReactElement => {
+    const {
+        showInfo, onMouseEnter, onMouseLeave, styleInfo,
+        classes, styleValue, infoValueLabel, infoDate
+    } = useInfo();
+
+
 
     return (
         <>

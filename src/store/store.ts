@@ -1,9 +1,9 @@
 import thunkMiddleware, {ThunkAction} from 'redux-thunk';
 import {Action, applyMiddleware, combineReducers, createStore, Middleware} from "redux";
-import summaryReducer from "./summary-reducer";
-import statisticReducer from "./statistic-reducer";
+import summaryReducer from "./reducers/summary-reducer";
+import statisticReducer from "./reducers/statistic-reducer";
 import {composeWithDevTools} from "redux-devtools-extension";
-import appReducer from "./app-reducer";
+import appReducer from "./reducers/app-reducer";
 import { reducer as formReducer } from 'redux-form';
 
 let rootReducer = combineReducers({

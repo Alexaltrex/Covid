@@ -3,7 +3,7 @@ import {StringParam, useQueryParam} from "use-query-params";
 import {useEffect} from "react";
 import {LangType} from "../types/types";
 import {StateType} from "../store/store";
-import {appAC} from "../store/app-reducer";
+import {appAC} from "../store/reducers/app-reducer";
 
 const useCommonQueryParams = () => {
     const dispatch = useDispatch();
@@ -20,6 +20,7 @@ const useCommonQueryParams = () => {
         setLangQuery(lang !== 'eng' ? lang : undefined);
             }, [
         lang,
+        setLangQuery
     ]);
 }
 export default useCommonQueryParams;

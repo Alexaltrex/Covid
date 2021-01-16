@@ -1,6 +1,6 @@
-import {summaryAPI} from "../DAL/api";
-import {BaseThunkType, GetActionsType} from "./store";
-import {CountryCasesType, SummaryCountryType} from "../types/types";
+import {summaryAPI} from "../../DAL/api";
+import {BaseThunkType, GetActionsType} from "../store";
+import {CountryCasesType, SummaryCountryType} from "../../types/types";
 import {appAC, AppActionsType} from "./app-reducer";
 
 let initialState = {
@@ -21,7 +21,18 @@ const summaryReducer = (state = initialState, action: SummaryActionsType): initi
             return {...state, date: action.date}
         }
         case 'SUMMARY/SET_SUMMARY_CASES': {
-           return {...state, summaryCases: action.summaryCases}
+            return {
+                ...state,
+                summaryCases:
+                    {
+                        NewConfirmed: action.summaryCases.NewConfirmed,
+                        TotalConfirmed: action.summaryCases.TotalConfirmed,
+                        NewDeaths: action.summaryCases.NewDeaths,
+                        TotalDeaths: action.summaryCases.TotalDeaths,
+                        NewRecovered: action.summaryCases.NewRecovered,
+                        TotalRecovered: action.summaryCases.TotalRecovered
+                    }
+            }
         }
         case 'SUMMARY/SET_COUNTRIES_CASES': {
             return {...state, countriesCases: action.countriesCases}
@@ -44,19 +55,25 @@ const summaryReducer = (state = initialState, action: SummaryActionsType): initi
 export const summaryAC = {
     setDate: (date: string) => ({type: 'SUMMARY/SET_DATE', date} as const),
     setSummaryCases: (summaryCases: CountryCasesType) => ({type: 'SUMMARY/SET_SUMMARY_CASES', summaryCases} as const),
-    setCountriesCases: (countriesCases: Array<SummaryCountryType>) => ({type: 'SUMMARY/SET_COUNTRIES_CASES', countriesCases} as const),
+    setCountriesCases: (countriesCases: Array<SummaryCountryType>) => ({
+        type: 'SUMMARY/SET_COUNTRIES_CASES',
+        countriesCases
+    } as const),
     setCurrentCountry: (country: string) => ({type: 'SUMMARY/SET_CURRENT_COUNTRY', country} as const),
-    setCountriesList: (countriesCases: Array<SummaryCountryType>) => ({type: 'SUMMARY/SET_COUNTRIES_LIST', countriesCases} as const),
- };
+    setCountriesList: (countriesCases: Array<SummaryCountryType>) => ({
+        type: 'SUMMARY/SET_COUNTRIES_LIST',
+        countriesCases
+    } as const),
+};
 
 export const getSummary = (): ThunkType => async (dispatch) => {
     try {
         dispatch(appAC.toggleLoading(true));
         const data = await summaryAPI.getSummary();
-                dispatch(summaryAC.setDate(data.Date));
-                dispatch(summaryAC.setSummaryCases(data.Global));
-                dispatch(summaryAC.setCountriesCases(data.Countries));
-                dispatch(summaryAC.setCountriesList(data.Countries));
+        dispatch(summaryAC.setDate(data.Date));
+        dispatch(summaryAC.setSummaryCases(data.Global));
+        dispatch(summaryAC.setCountriesCases(data.Countries));
+        dispatch(summaryAC.setCountriesList(data.Countries));
     } catch (e) {
         console.log(e)
         appAC.setLanError(true);

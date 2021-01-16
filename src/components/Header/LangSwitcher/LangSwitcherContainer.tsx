@@ -2,7 +2,7 @@ import {StateType} from "../../../store/store";
 import {connect} from "react-redux";
 import {LangType} from "../../../types/types";
 import LangSwitcher from "./LangSwitcher";
-import {appAC} from "../../../store/app-reducer";
+import {appAC} from "../../../store/reducers/app-reducer";
 
 let mapStateToProps = (state: StateType): MapStatePropsType => ({
     lang: state.app.lang

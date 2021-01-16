@@ -1,19 +1,26 @@
 import {InjectedFormProps, reduxForm} from "redux-form";
 import {CountryType, LangType, StatisticFormValuesType} from "../../../../types/types";
 import React, {ReactElement} from "react";
-import {StatisticFormPropsType} from "./StatisticFormContainer";
 import StatisticFormRow from "./StatisticFormRow";
 import {translate} from "../../../../helpers/translate";
+import {useDispatch, useSelector} from "react-redux";
+import {getCountriesData, getFormValuesSelector} from "../../../../store/selectors/statistic-selectors";
+import {getLang} from "../../../../store/selectors/app-selector";
+import {statisticAC} from "../../../../store/reducers/statistic-reducer";
 
 //================================= FORM ===================================
 const Form: React.FC<FormPropsType> = (props: FormPropsType): ReactElement => {
     const {
         handleSubmit, countriesData, lang
     } = props;
-    const countryElements = countriesData && countriesData.map((el, i) => <option key={i}
-                                                                                  value={el.Slug}>
-        {el.Country}
-    </option>);
+    const countryElements = countriesData?.map(
+        (el, i) => (
+            <option key={i}
+                    value={el.Slug}>
+                {el.Country}
+            </option>
+        )
+    );
 
     const periodArray = [
         {label: translate(lang, '1 week'), value: 7},
@@ -53,9 +60,10 @@ const Form: React.FC<FormPropsType> = (props: FormPropsType): ReactElement => {
                 {el.label}
             </option>
         ));
+
     return (
         <form onSubmit={handleSubmit}>
-            <StatisticFormRow fieldTitle={translate(lang, 'Country')} name='country' elements={countryElements}/>
+            <StatisticFormRow fieldTitle={translate(lang, 'Country')} name='country' elements={countryElements as Array<JSX.Element>}/>
             <StatisticFormRow fieldTitle={translate(lang, 'Period')} name='period' elements={periodElements}/>
             <StatisticFormRow fieldTitle={translate(lang, 'By day / Total')} name='byDayOrTotal'
                               elements={byDayOrTotalElements}/>
@@ -70,20 +78,14 @@ const ReduxForm = reduxForm<StatisticFormValuesType, FormOwnPropsType>({
 })(Form);
 
 //=========================== COMPONENT =====================================
-const StatisticForm: React.FC<StatisticFormPropsType> = (props: StatisticFormPropsType): ReactElement => {
-    const {countriesData, formValues, setFormValues, setPeriod, lang} = props;
+const StatisticForm: React.FC<{}> = (): ReactElement => {
+    const dispatch = useDispatch();
+    const countriesData = useSelector(getCountriesData);
+    const lang = useSelector(getLang);
+    const formValues = useSelector(getFormValuesSelector);
+
     const onSubmit = (newFormValue: StatisticFormValuesType) => {
-        setFormValues(newFormValue);
-        // если formValues.period = -1 (старое значение, из стора)
-        // и изменилось ByDayOrTotal или caseType - что не приводит к загрузке данных с сервера
-        // и пересчету period на реальное значение,
-        // state.period переписывать на значение из формы (-1) нельзя
-        if (
-            !(formValues.period === '-1' &&
-                (formValues.caseType !== newFormValue.caseType || formValues.byDayOrTotal !== newFormValue.byDayOrTotal))
-        ) {
-            setPeriod(+newFormValue.period);
-        }
+        dispatch(statisticAC.setFormValues(newFormValue));
     };
     const initialValues: StatisticFormValuesType = formValues;
     return (
@@ -99,7 +101,8 @@ const StatisticForm: React.FC<StatisticFormPropsType> = (props: StatisticFormPro
 export default StatisticForm;
 
 //============================= TYPE ============================
-type FormPropsType = InjectedFormProps<StatisticFormValuesType, FormOwnPropsType> & FormOwnPropsType
+type FormPropsType = InjectedFormProps<StatisticFormValuesType,
+    FormOwnPropsType> & FormOwnPropsType
 type FormOwnPropsType = {
     countriesData: null | Array<CountryType>
     lang: LangType

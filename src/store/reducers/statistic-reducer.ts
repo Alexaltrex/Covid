@@ -1,8 +1,8 @@
-import {statisticAPI} from "../DAL/api";
-import {DATE} from "../helpers/date";
-import {CANVAS} from "../helpers/canvas";
+import {statisticAPI} from "../../DAL/api";
+import {DATE} from "../../helpers/date";
+import {CANVAS} from "../../helpers/canvas";
 import {appAC, AppActionsType} from "./app-reducer";
-import {BaseThunkType, GetActionsType} from "./store";
+import {BaseThunkType, GetActionsType} from "../store";
 import {
     ByDayOrTotalType,
     CaseTypeType,
@@ -11,7 +11,7 @@ import {
     PeriodType,
     StatisticFormValuesType,
     typeType
-} from "../types/types";
+} from "../../types/types";
 
 let initialState = {
     countriesData: null as null | Array<CountryType>, // Список названий стран, слагов стран и ISO2
@@ -63,6 +63,8 @@ const statisticReducer = (state = initialState, action: StatisticActionsType): i
             return {...state, isInitialized: true}
         }
         case 'statistic/SET_FORM_VALUES': {
+
+
             return {...state, formValues: action.formValues}
         }
         case 'statistic/SET_COUNTRIES_DATA': {
@@ -193,9 +195,6 @@ const statisticReducer = (state = initialState, action: StatisticActionsType): i
                 yPoint = null;
             }
             let infoValue: number | null | string = (state.valuesCurrent as Array<number | null>)[iPoint];
-            // if (infoValue === null) {
-            //     infoValue = 'no data';
-            // }
             const infoDate = state.dates && state.dates[iPoint];
             return {
                 ...state, mouseX: action.mouseX, mouseY: action.mouseY,
@@ -207,7 +206,6 @@ const statisticReducer = (state = initialState, action: StatisticActionsType): i
             return {...state, mouseHoverCanvas: action.mouseHoverCanvas}
         }
         case 'statistic/SET_CURRENT_VALUES': {
-            console.log('statistic/SET_CURRENT_VALUES')
             const valuesCurrent = state.allValues[action.caseType][action.byDayOrTotal].values;
             return {...state, valuesCurrent: valuesCurrent}
         }
@@ -248,9 +246,8 @@ export const statisticAC = {
     setShowInfo: (showInfo: boolean) => ({type: 'statistic/SET_SHOW_INFO', showInfo} as const)
 };
 
-
-// 1 - получение списка стран, 2 - получение актуальной последней даты, 3 - получить значения
 export const getInitial = (period: PeriodType, country: string, byDayOrTotal: ByDayOrTotalType, caseType: CaseTypeType): ThunkType => async (dispatch) => {
+    // 1 - получение списка стран, 2 - получение актуальной последней даты, 3 - получить значения
     try {
         dispatch(appAC.toggleLoading(true));
         // 1 - получение списка стран
@@ -267,7 +264,8 @@ export const getInitial = (period: PeriodType, country: string, byDayOrTotal: By
         let dateStartJS = new Date(dateEndJS.getTime() - (+period) * 24 * 60 * 60 * 1000);
         let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
         // 3 - получить значения
-        const getValuesByPeriodResponse = await statisticAPI.getValuesByPeriod(country, dateStartAPI, dateEndAPI)
+        const getValuesByPeriodResponse = await statisticAPI.getValuesByPeriod(country, dateStartAPI, dateEndAPI);
+        //console.log(`getValuesByPeriodResponse = ${getValuesByPeriodResponse.length}`);
         dispatch(statisticAC.setValues(getValuesByPeriodResponse, byDayOrTotal, caseType));
         dispatch(statisticAC.setDates(getValuesByPeriodResponse)); // установить массив дат
         // 4 - окончательно - проинициализировать

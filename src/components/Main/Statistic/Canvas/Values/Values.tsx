@@ -1,15 +1,16 @@
 import React, {ReactElement} from 'react';
 import Value from "./Value";
 import {CANVAS} from "../../../../../helpers/canvas";
-import {ValuesPropsType} from "./ValuesContainer";
+import {useSelector} from "react-redux";
+import {getValuesCurrent} from "../../../../../store/selectors/statistic-selectors";
 
-const Values: React.FC<ValuesPropsType> = (props: ValuesPropsType): ReactElement => {
-    const {valuesCurrent} = props;
+const Values: React.FC<{}> = (): ReactElement => {
+    const valuesCurrent = useSelector(getValuesCurrent);
 
     const marginY = CANVAS.marginY;
     const canvasH = CANVAS.canvasH();
 
-    const valuesCurrentFilter = valuesCurrent.filter(el => el) as Array<number>
+    const valuesCurrentFilter = valuesCurrent.filter(el => el || el === 0) as Array<number>
     const valueMin = Math.min.apply(null, valuesCurrentFilter);// минимальное значение из массива
     const valueMax = Math.max.apply(null, valuesCurrentFilter);// максимальное значение из массива
     const DELTA = valueMax - valueMin; // разница между макс и мин
@@ -47,7 +48,6 @@ const Values: React.FC<ValuesPropsType> = (props: ValuesPropsType): ReactElement
     }
 
     let left = CANVAS.marginLeftX - 5; // значение left абсолютного позиционирования
-
     let valuesElements = valuesArr.map((el, i) => (
         <Value key={i}
                value={el}
@@ -57,7 +57,7 @@ const Values: React.FC<ValuesPropsType> = (props: ValuesPropsType): ReactElement
 
     return (
         <>
-            {valuesElements}
+            {valuesCurrent.length && valuesElements}
         </>
     )
 };

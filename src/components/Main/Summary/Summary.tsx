@@ -3,23 +3,38 @@ import SummaryCases from "./SummaryCases";
 import {CountryCasesType, LangType, SummaryCountryType} from "../../../types/types";
 import {translate} from "../../../helpers/translate";
 import {DATE} from "../../../helpers/date";
-import SelectCurrentCountryContainer from "./SelectCurrentCountryContainer";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {Typography} from "@material-ui/core";
 import Preloader from "../../common/Preloader";
 import clsx from "clsx";
 import useCommonQueryParams from "../../../hooks/useCommonQueryParams";
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {StringParam, useQueryParam} from "use-query-params";
-import {summaryAC} from "../../../store/summary-reducer";
+import {getSummary, summaryAC} from "../../../store/reducers/summary-reducer";
+import SelectCurrentCountry from "./SelectCurentCountry";
+import {
+    getCountriesCases,
+    getCurrentCountry,
+    getDate,
+    getSummaryCases
+} from "../../../store/selectors/summary-selector";
+import {getIsLoading, getLang} from "../../../store/selectors/app-selector";
 
 //========================= CUSTOM HOOK ====================
-const useSummary = (
-    currentCountry: string,
-    countriesCases: null | Array<SummaryCountryType>,
-) => {
-    const dispatch = useDispatch();
+const useSummary = () => {
     useCommonQueryParams();
+    const dispatch = useDispatch();
+    const date = useSelector(getDate);
+    const summaryCases = useSelector(getSummaryCases);
+    const isLoading = useSelector(getIsLoading);
+    const lang = useSelector(getLang);
+    const countriesCases = useSelector(getCountriesCases);
+    const currentCountry = useSelector(getCurrentCountry);
+
+    useEffect(() => {
+        dispatch(getSummary());
+    }, []);
+
     const [countryQuery, setCountryQuery] = useQueryParam('country', StringParam);
     // URL => STATE
     useEffect(() => {
@@ -44,16 +59,17 @@ const useSummary = (
     }) as null | CountryCasesType;
 
     return {
-        classes, currentCases
+        classes, currentCases, date, summaryCases,
+        isLoading, lang
     }
-}
+};
 
 //========================= COMPONENT ======================
-const Summary: React.FC<PropsType> = (props: PropsType): ReactElement => {
-    const {date, summaryCases, isLoading, lang, countriesCases, currentCountry} = props;
+const Summary: React.FC<{}> = (): ReactElement => {
     const {
-        classes, currentCases
-    } = useSummary(currentCountry, countriesCases);
+        classes, currentCases, date, summaryCases,
+        isLoading, lang
+    } = useSummary();
 
     if (isLoading) return <Preloader/>;
     return (
@@ -74,7 +90,7 @@ const Summary: React.FC<PropsType> = (props: PropsType): ReactElement => {
                         </Typography>
                     </div>
                     <div>
-                        <SelectCurrentCountryContainer/>
+                        <SelectCurrentCountry/>
 
                     </div>
                     <SummaryCases cases={currentCases} lang={lang}/>

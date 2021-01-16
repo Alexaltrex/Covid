@@ -1,15 +1,18 @@
 import React, {ReactElement, useEffect, useRef} from "react";
 import {CANVAS} from "../../../../helpers/canvas";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import {CanvasGraphPropsType} from "./CanvasGraphContainer";
 import throttle from 'lodash/throttle';
+import {useDispatch, useSelector} from "react-redux";
+import {getFormValuesSelector, getPeriod, getValuesCurrent} from "../../../../store/selectors/statistic-selectors";
+import {statisticAC} from "../../../../store/reducers/statistic-reducer";
 
-export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPropsType): ReactElement => {
-    const {
-        setMouseXY, setMouseHoverCanvas,
-        valuesCurrent, period, caseType
-    } = props;
+//==================== CUSTOM HOOK =====================
+const useCanvasGraph = () => {
     const classes = useStyles();
+    const dispatch = useDispatch();
+    const valuesCurrent = useSelector(getValuesCurrent);
+    const period = useSelector(getPeriod);
+    const caseType = useSelector(getFormValuesSelector).caseType;
 
     let canvasRef = useRef<HTMLCanvasElement | null>(null);
     let canvasCtxRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -29,7 +32,7 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
             ctx!.fillStyle = 'transparent';
             ctx!.fillRect(0, 0, canvasW, canvasH);
 
-            const valuesCurrentFilter = valuesCurrent.filter(el => el) as Array<number>
+            const valuesCurrentFilter = valuesCurrent.filter(el => el || el === 0) as Array<number>; // фильтрация от недействительных значений
             const valueMin = Math.min.apply(null, valuesCurrentFilter);// минимальное значение из массива
             const valueMax = Math.max.apply(null, valuesCurrentFilter);// максимальное значение из массива
             const DELTA = valueMax - valueMin; // разница между макс и мин
@@ -41,6 +44,7 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
             let deltaGridY: number, valueMinGrid: number, valueMaxGrid: number, deltaY: number;
             if (DELTA !== 0) {
                 deltaGridY = CANVAS.deltaGridYf(DELTA); // шаг координатной сетки по оси Y
+
                 valueMinGrid = deltaGridY * Math.floor(valueMin / deltaGridY);// значение по сетке, ограничивающее график снизу
                 valueMaxGrid = deltaGridY * (Math.ceil(valueMax / deltaGridY) + 0 * 1);// значение по сетке, ограничивающее график сверху
                 deltaY = (canvasH - marginY) / (valueMaxGrid - valueMinGrid);// коэффициэнт перевода в масштаб канваса по оси Y
@@ -77,7 +81,7 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
                 } else {
                     return (canvasH) / 2 - marginY;
                 }
-            }
+            };
 
             // график 'confirmed', 'recovered', 'deaths'
             if (caseType === 'confirmed') ctx!.strokeStyle = 'red';
@@ -118,8 +122,6 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
                     ctx!.stroke();
                 }
             }
-
-
         }
     }, [valuesCurrent, period, caseType]);
 
@@ -128,20 +130,32 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
             const canvas: DOMRect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - canvas.left;
             const y = e.clientY - canvas.top;
-            //console.log('on CanvasGraph move')
-            setMouseXY(x, y);
+            dispatch(statisticAC.setMouseXY(x, y));
         }
     };
 
     const onMouseMoveThrottle = throttle(onMouseMove, 10);
 
     const onMouseEnter = () => {
-        setMouseHoverCanvas(true)
+        dispatch(statisticAC.setMouseHoverCanvas(true));
     };
 
     const onMouseLeave = () => {
-        setMouseHoverCanvas(false)
+        dispatch(statisticAC.setMouseHoverCanvas(false));
     };
+
+    return {
+        classes, canvasRef, onMouseMoveThrottle,
+        onMouseEnter, onMouseLeave
+    }
+};
+
+//==================== COMPONENT =====================
+export const CanvasGraph: React.FC<{}> = (): ReactElement => {
+    const {
+        classes, canvasRef, onMouseMoveThrottle,
+        onMouseEnter, onMouseLeave
+    } = useCanvasGraph();
 
     return (
         <canvas
@@ -152,9 +166,7 @@ export const CanvasGraph: React.FC<CanvasGraphPropsType> = (props: CanvasGraphPr
             onMouseMove={onMouseMoveThrottle}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-
         />
-
     )
 };
 export default CanvasGraph;

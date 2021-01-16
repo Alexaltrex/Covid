@@ -3,8 +3,9 @@ import React from "react";
 import {Field, InjectedFormProps, reduxForm, submit} from "redux-form";
 import renderSelectField from "../../common/renderSelectField";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import {SelectCurrentCountryPropsType} from "./SelectCurrentCountryContainer";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {getCountriesList, getCurrentCountry} from "../../../store/selectors/summary-selector";
+import {summaryAC} from "../../../store/reducers/summary-reducer";
 
 //================================= FORM ===================================
 const Form: React.FC<FormPropsType> = (props) => {
@@ -43,20 +44,32 @@ const ReduxForm = reduxForm<FormValuesType, FormOwnPropsType>({
     form: 'summary-country',
 })(Form);
 
-//=========================== COMPONENT =====================================
-const SelectCurrentCountry: React.FC<ComponentPropsType> = (props: ComponentPropsType): ReactElement => {
-    const {setCurrentCountry, currentCountry, countriesList} = props;
+//========================== CUSTOM HOOK ========================
+const useSelectCurrentCountry = () => {
+    const currentCountry = useSelector(getCurrentCountry);
+    const countriesList = useSelector(getCountriesList)
+    const dispatch = useDispatch();
     const onSubmit = (formValue: FormValuesType) => {
-        setCurrentCountry(formValue.country);
+        dispatch(summaryAC.setCurrentCountry(formValue.country));
     };
     const initialValues: FormValuesType = {
         country: currentCountry
     };
+    return {
+        countriesList, onSubmit, initialValues
+    }
+};
+
+//=========================== COMPONENT =====================================
+const SelectCurrentCountry: React.FC<{}> = (): ReactElement => {
+    const {
+        countriesList, onSubmit, initialValues
+    } = useSelectCurrentCountry();
+
     return (
         <ReduxForm onSubmit={onSubmit}
                    initialValues={initialValues}
                    countriesList={countriesList}
-
         />
     )
 };
@@ -71,7 +84,6 @@ type FormValuesType = {
 type FormOwnPropsType = {
     countriesList: Array<string>
 }
-type ComponentPropsType = SelectCurrentCountryPropsType;
 
 //====================== STYLES ============================
 const useStyles = makeStyles({

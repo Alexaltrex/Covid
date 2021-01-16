@@ -1,6 +1,6 @@
 import {connect, useDispatch} from "react-redux";
 import {StateType} from "../../../../store/store";
-import {appAC} from "../../../../store/app-reducer";
+import {appAC} from "../../../../store/reducers/app-reducer";
 import * as React from "react";
 import {FormValuesType, LanErrorResponseType, LangType, PeriodType} from "../../../../types/types";
 import {Dialog} from "@material-ui/core";
@@ -14,7 +14,7 @@ import grey from "@material-ui/core/colors/grey";
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import Typography from "@material-ui/core/Typography";
 import {useEffect, useState} from "react";
-import {getInitial} from "../../../../store/statistic-reducer";
+import {getInitial} from "../../../../store/reducers/statistic-reducer";
 import {translate} from "../../../../helpers/translate";
 
 const LanErrorDialog: React.FC<PropsType> = (props: PropsType) => {

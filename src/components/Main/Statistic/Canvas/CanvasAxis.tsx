@@ -2,11 +2,9 @@ import React, {ReactElement, useEffect, useRef} from "react";
 import {CANVAS} from "../../../../helpers/canvas";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 
-
-export const CanvasAxis: React.FC = (): ReactElement => {
+//================== CUSTOM HOOK ==================
+const useCanvasAxis = () => {
     const classes = useStyles();
-
-
     let canvasAxisRef = useRef<HTMLCanvasElement | null>(null);
     let canvasAxisCtxRef = React.useRef<CanvasRenderingContext2D | null>(null);
 
@@ -31,17 +29,25 @@ export const CanvasAxis: React.FC = (): ReactElement => {
         }
     }, []);
 
+    return {
+        classes, canvasAxisRef
+    }
+};
+
+//================== COMPONENT ====================
+export const CanvasAxis: React.FC = (): ReactElement => {
+    const {
+        classes, canvasAxisRef
+    } = useCanvasAxis();
+
     return (
         <>
-            <div>
-
-            </div>
-        <canvas
-            className={classes.canvasAxis}
-            ref={canvasAxisRef}
-            width={CANVAS.canvasW()}
-            height={CANVAS.canvasH()}
-        />
+            <canvas
+                className={classes.canvasAxis}
+                ref={canvasAxisRef}
+                width={CANVAS.canvasW()}
+                height={CANVAS.canvasH()}
+            />
         </>
 
     )

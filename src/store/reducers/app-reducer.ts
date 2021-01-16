@@ -1,6 +1,6 @@
-import {LangType} from "../types/types";
-import {GetActionsType} from "./store";
-import {LanErrorResponseType} from "../types/types";
+import {LangType} from "../../types/types";
+import {GetActionsType} from "../store";
+import {LanErrorResponseType} from "../../types/types";
 
 
 export type InitialStateType = typeof initialState;

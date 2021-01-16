@@ -1,15 +1,27 @@
 import React, {ReactElement, useEffect, useRef} from "react";
 import {CANVAS} from "../../../../helpers/canvas";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import {CanvasPointPropsType} from "./CanvasPointContainer";
 import throttle from 'lodash/throttle'
+import {useDispatch, useSelector} from "react-redux";
+import {
+    getFormValuesSelector,
+    getMouseHoverCanvas,
+    getMouseX, getShowInfo,
+    getXPoint,
+    getYPoint
+} from "../../../../store/selectors/statistic-selectors";
+import {statisticAC} from "../../../../store/reducers/statistic-reducer";
 
-export const CanvasPoint: React.FC<CanvasPointPropsType> = (props): ReactElement => {
-    const {
-        mouseHoverCanvas, mouseX, xPoint, yPoint,
-        caseType, showInfo, setMouseXY, setMouseHoverCanvas
-    } = props;
+//================== CUSTOM HOOK ==================
+const useCanvasPoint = () => {
     const classes = useStyles();
+    const dispatch = useDispatch();
+    const mouseHoverCanvas = useSelector(getMouseHoverCanvas)
+    const mouseX = useSelector(getMouseX);
+    const xPoint = useSelector(getXPoint);
+    const yPoint = useSelector(getYPoint);
+    const caseType = useSelector(getFormValuesSelector).caseType;
+    const showInfo = useSelector(getShowInfo);
 
     let canvasRef = useRef<HTMLCanvasElement | null>(null);
     let canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -62,24 +74,37 @@ export const CanvasPoint: React.FC<CanvasPointPropsType> = (props): ReactElement
     }, [mouseHoverCanvas, mouseX, xPoint, yPoint, caseType, showInfo]);
 
     const onMouseEnter = () => {
-        setMouseHoverCanvas(true)
+        dispatch(statisticAC.setMouseHoverCanvas(true));
     };
 
     const onMouseLeave = () => {
-        setMouseHoverCanvas(false)
+        dispatch(statisticAC.setMouseHoverCanvas(false));
     };
 
     const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         if (e.target) {
             const canvas: DOMRect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - canvas.left
+            const x = e.clientX - canvas.left;
             const y = e.clientY - canvas.top;
-            setMouseXY(x, y);
-            //console.log('on CanvasPoint move')
+            dispatch(statisticAC.setMouseXY(x, y));
         }
     };
 
     const onMouseMoveThrottle = throttle(onMouseMove, 10);
+
+    return {
+        classes, canvasRef, onMouseEnter,
+        onMouseLeave, onMouseMoveThrottle
+    }
+};
+
+//================== COMPONENT ====================
+export const CanvasPoint: React.FC<{}> = (): ReactElement => {
+    const {
+
+        classes, canvasRef, onMouseEnter,
+        onMouseLeave, onMouseMoveThrottle
+    } = useCanvasPoint();
 
     return (
         <canvas

@@ -7,7 +7,7 @@ import grey from "@material-ui/core/colors/grey";
 const Value: React.FC<PropsType> = (props: PropsType) => {
     const {top, left, value} = props;
     const classes = useStyles();
-    let styleInline = {top: top, left: left}
+    let styleInline = {top: top, left: left};
     return (
         <div className={classes.value} style={styleInline}>
             {addCommaToNumber(value)}

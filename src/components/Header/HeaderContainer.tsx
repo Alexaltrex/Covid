@@ -2,7 +2,7 @@ import Header from "./Header";
 import {LangType} from "../../types/types";
 import {StateType} from "../../store/store";
 import {connect} from "react-redux";
-import {appAC} from "../../store/app-reducer";
+import {appAC} from "../../store/reducers/app-reducer";
 
 
 let mapStateToProps = (state: StateType): MapStatePropsType => ({

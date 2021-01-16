@@ -1,29 +1,41 @@
-import {CanvasPropsType} from "./CanvasContainer";
 import {ReactElement} from "react";
 import React from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {CANVAS} from "../../../../helpers/canvas";
-import InfoContainer from "./Info/InfoContainer";
-import CanvasPointContainer from "./CanvasPointContainer";
 import CanvasAxisMemo from "./CanvasAxis";
-import CanvasGraphContainer from "./CanvasGraphContainer";
-import ValuesContainer from "./Values/ValuesContainer";
-import DatesContainer from "./Dates/DatesContainer";
 import Preloader from "../../../common/Preloader";
+import Dates from "./Dates/Dates";
+import Info from "./Info/Info";
+import Values from "./Values/Values";
+import {getMouseHoverCanvas, getShowInfo} from "../../../../store/selectors/statistic-selectors";
+import {useSelector} from "react-redux";
+import {getIsLoading, getLanError} from "../../../../store/selectors/app-selector";
+import CanvasGraph from "./CanvasGraph";
+import CanvasPoint from "./CanvasPoint";
 
-export const CanvasAll: React.FC<CanvasPropsType> = (props: CanvasPropsType): ReactElement => {
-    const {
-        valuesCurrent, mouseHoverCanvas, showInfo,
-        isLoading, lanError
-    } = props;
+//================== CUSTOM HOOK ==================
+const useCanvasAll = () => {
     const classes = useStyles();
-    //let valueIsExists = !!valuesCurrent.length;
+    const mouseHoverCanvas = useSelector(getMouseHoverCanvas);
+    const showInfo = useSelector(getShowInfo);
+    const isLoading = useSelector(getIsLoading);
+    const lanError = useSelector(getLanError);
+
+    return {
+        classes, lanError, isLoading, showInfo, mouseHoverCanvas
+    }
+};
+
+//================== COMPONENT ====================
+export const CanvasAll: React.FC<{}> = (): ReactElement => {
+    const {
+        classes, lanError, isLoading, showInfo, mouseHoverCanvas
+    } = useCanvasAll();
 
     return (
         <div className={classes.canvasBlock}>
             <div className={classes.canvasAll}>
                 <CanvasAxisMemo/>
-
                 {
                     !lanError &&
                     <>
@@ -31,21 +43,18 @@ export const CanvasAll: React.FC<CanvasPropsType> = (props: CanvasPropsType): Re
                             isLoading
                                 ? <Preloader/>
                                 : <>
-                                    <CanvasGraphContainer/>
-                                    {showInfo && mouseHoverCanvas && <CanvasPointContainer/>}
-                                    <ValuesContainer/>
-                                    {showInfo && mouseHoverCanvas && <InfoContainer/>}
-                                    <DatesContainer/>
+                                    <CanvasGraph/>
+                                    {showInfo && mouseHoverCanvas && <CanvasPoint/>}
+                                    <Values/>
+                                    {showInfo && mouseHoverCanvas && <Info/>}
+                                    <Dates/>
                                 </>
                         }
                     </>
                 }
-
             </div>
-
         </div>
-    )
-};
+    )};
 export default CanvasAll;
 
 //========================= STYLE ==================
