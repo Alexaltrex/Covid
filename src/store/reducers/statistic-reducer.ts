@@ -250,24 +250,34 @@ export const getInitial = (period: PeriodType, country: string, byDayOrTotal: By
     // 1 - получение списка стран, 2 - получение актуальной последней даты, 3 - получить значения
     try {
         dispatch(appAC.toggleLoading(true));
+
         // 1 - получение списка стран
         const getCountriesResponse = await statisticAPI.getCountries()
         dispatch(statisticAC.setCountriesData(getCountriesResponse));
+
         // 2 - получение актуальной последней даты
         const dateEndAPI = await statisticAPI.getDateEnd(country)
         //let dateEndAPI = getDateEndResponse[getDateEndResponse.length - 1].Date;//API
         dispatch(statisticAC.setDateEnd(dateEndAPI));
-        let dateEndJS = DATE.dateAPIToJs(dateEndAPI);
-        // массив values имеет длину period + 1 для определения величины за день
-        // valuesDay[0] = valuesTotal[0] - valuesTotal[-1]
-        // для этого начальная дата в запросе меньше на день
-        let dateStartJS = new Date(dateEndJS.getTime() - (+period) * 24 * 60 * 60 * 1000);
-        let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
+
         // 3 - получить значения
-        const getValuesByPeriodResponse = await statisticAPI.getValuesByPeriod(country, dateStartAPI, dateEndAPI);
-        //console.log(`getValuesByPeriodResponse = ${getValuesByPeriodResponse.length}`);
-        dispatch(statisticAC.setValues(getValuesByPeriodResponse, byDayOrTotal, caseType));
-        dispatch(statisticAC.setDates(getValuesByPeriodResponse)); // установить массив дат
+        if (period !== '-1' ) {
+            let dateEndJS = DATE.dateAPIToJs(dateEndAPI);
+            // массив values имеет длину period + 1 для определения величины за день
+            // valuesDay[0] = valuesTotal[0] - valuesTotal[-1]
+            // для этого начальная дата в запросе меньше на день
+            let dateStartJS = new Date(dateEndJS.getTime() - (+period) * 24 * 60 * 60 * 1000);
+            let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
+            const getValuesByPeriodResponse = await statisticAPI.getValuesByPeriod(country, dateStartAPI, dateEndAPI);
+            dispatch(statisticAC.setValues(getValuesByPeriodResponse, byDayOrTotal, caseType));
+            dispatch(statisticAC.setDates(getValuesByPeriodResponse)); // установить массив дат
+        } else { // period === '-1'
+            const data = await statisticAPI.getValuesFromDayOne(country)
+            dispatch(statisticAC.setPeriod(data.length));
+            dispatch(statisticAC.setValues(data, byDayOrTotal, caseType)); // установить значения
+            dispatch(statisticAC.setDates(data)); // установить массив дат
+        }
+
         // 4 - окончательно - проинициализировать
         dispatch(statisticAC.setInitialized())
     } catch (error) {
@@ -302,10 +312,11 @@ export const getInitial = (period: PeriodType, country: string, byDayOrTotal: By
     }
 };
 
+// получить значение
 export const getValues = (dateEnd: string, period: PeriodType, country: string, byDayOrTotal: ByDayOrTotalType, caseType: CaseTypeType): ThunkType => async (dispatch) => {
     try {
         dispatch(appAC.toggleLoading(true));
-        if (period === '7' || period === '14' || period === '30') {
+        if (period !== '-1' ) {
             let dateEndJS = DATE.dateAPIToJs(dateEnd);
             let dateStartJS = new Date(dateEndJS.getTime() - (+period) * 24 * 60 * 60 * 1000);
             let dateStartAPI = DATE.dateJsToAPI(dateStartJS);
@@ -313,14 +324,13 @@ export const getValues = (dateEnd: string, period: PeriodType, country: string, 
             dispatch(statisticAC.setValues(data, byDayOrTotal, caseType)); // установить значения
             dispatch(statisticAC.setDates(data)); // установить даты
         } else { // period === '-1'
-            //console.log('getValuesFromDayOne')
             const data = await statisticAPI.getValuesFromDayOne(country)
             dispatch(statisticAC.setPeriod(data.length));
             dispatch(statisticAC.setValues(data, byDayOrTotal, caseType)); // установить значения
             dispatch(statisticAC.setDates(data)); // установить массив дат
         }
     } catch (e) {
-        console.log(e)
+        console.log(e);
         dispatch(appAC.setLanError(true));
     } finally {
         dispatch(appAC.toggleLoading(false));
